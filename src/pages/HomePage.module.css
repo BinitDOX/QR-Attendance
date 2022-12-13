@@ -1,0 +1,20 @@
+.homepage {
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+
+  margin: 2rem 2rem;
+  justify-content: center;
+  text-align: center;
+  color: #ffdb1b;
+}
+
+.homepage .title {
+  text-transform: uppercase;
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.homepage .logo {
+  margin-top: 1rem;
+}
