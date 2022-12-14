@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import Header from '../components/Header';
 import { QrReader } from 'react-qr-reader';
+import exportFromJSON from 'export-from-json'
 import { useSnackbar } from "notistack";
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
@@ -23,9 +24,10 @@ import DownloadIcon from '@mui/icons-material/Download';
 import Loader from "../components/Loader";
 import AuthContext from '../store/auth-context';
 import InputField from '../components/InputField';
-import { writeCourseData, fetchCourseData, writeAttendanceData, signInWithGoogle } from '../firebase/FirebaseUtils';
+import { writeCourseData, fetchCourseData, writeAttendanceData, readFullDatabase, signInWithGoogle } from '../firebase/FirebaseUtils';
 
 import './ProfessorPage.css';
+import { async } from '@firebase/util';
 
 const ProfessorPage = (props) => {
   // Initializers
@@ -130,18 +132,60 @@ const ProfessorPage = (props) => {
   }
 
   const markAttendanceHandler = (data) => {
-    if(QRDataPrev === data)
+    if (QRDataPrev === data)
       return;
 
     QRDataPrev = data;
-    const date = new Date().toLocaleString("en-Us", {timeZone: 'Asia/Kolkata'}).slice(0, 10);
-    const attendanceData = {course: record, uid: data, date: date};
+    const date = new Date().toLocaleString("en-Us", { timeZone: 'Asia/Kolkata' }).slice(0, 10);
+    const attendanceData = { course: record, uid: data, date: date };
     console.log(attendanceData);
 
     writeAttendanceToDataBase(attendanceData)
-    .then((res) => {
-      QRDataPrev = res;
-    });
+      .then((res) => {
+        QRDataPrev = res;
+      });
+  }
+
+  const downloadCSVHandler = (data) => {
+    const fileName = record;
+    const exportType = exportFromJSON.types.xls;
+
+    exportFromJSON({ data, fileName, exportType});
+  }
+
+  // Direct Async Handler [Best Method]
+  const generateCSVHandler = async () => {
+    displayLoaderHandler(true);
+    const db = await readFullDatabase(authContext);
+    console.log(db);
+    const courses = db[authContext.uid].courses;
+    let userMap = {}
+
+    console.log(courses[record]);
+    try {
+      for (const [date, users] of Object.entries(courses[record])) {
+        for (const [user, marker] of Object.entries(users)) {
+          const prev = userMap[user];
+          userMap = { ...userMap, [user]: { ...prev, [date]: marker } }
+        }
+      }
+
+      for (const [user, data] of Object.entries(userMap)) {
+        const prev = userMap[user];
+        userMap = {
+          ...userMap, [user]: {
+            RollNo: db[user].rollno, Name: db[user].name, Email: db[user].email, ...prev
+          }
+        }
+      }
+      // console.log(userMap);
+      downloadCSVHandler(Object.values(userMap));
+    } catch (err) {
+      displayToastHandler('Internal error', 'error');
+      console.log(err);
+    } finally {
+      displayLoaderHandler(false);
+    }
   }
 
 
@@ -249,9 +293,9 @@ const ProfessorPage = (props) => {
                     />
                     <p> {QRData} </p>
                   </div>
-                  
+
                   <div className='submitbutton'>
-                    <Button sx={{ m: 2 }} variant="outlined" size='large' endIcon={<DownloadIcon />}>
+                    <Button sx={{ m: 2 }} variant="outlined" size='large' endIcon={<DownloadIcon />} onClick={generateCSVHandler}>
                       GENERATE CSV
                     </Button>
                   </div>

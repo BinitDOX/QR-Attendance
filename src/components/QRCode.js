@@ -8,7 +8,7 @@ const QRCode = (props) => {
   return (
     <div className='qrcode'>
       <Typography sx={{ m: 1 }} variant='h3' component='h3' align='center'>
-        QR-CODE
+        QR CODE
       </Typography>
       <div style={{ background: '#ffd700', padding: '10px', margin: '1rem'}}>
         <QRC

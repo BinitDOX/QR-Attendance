@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, collection } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { firebaseConfig } from './FirebaseConfig';
 
@@ -180,7 +180,7 @@ export const writeAttendanceData = async (
     await setDoc(doc(usersRef, uid), {
       courses: {[attendanceDetails.course] : {[attendanceDetails.date] : {[attendanceDetails.uid] : true}}}
     }, { merge: true });
-    displayToastHandler('Data saved successfully', 'success');
+    displayToastHandler('Attendance Marked', 'success');
   } catch (err) {
     displayToastHandler(err, 'error');
     console.log(err);
@@ -199,3 +199,59 @@ export const writeAttendanceData = async (
   const userSnap = await getDoc(userRef);
   return userSnap;
 };
+
+
+export const fetchUserMarked = async (authContext) => {
+  if (!authContext || !authContext.token) return;
+
+  const { uid, email } = authContext;
+  const userRef = doc(db, 'users', uid);
+  let userSnap = await getDoc(userRef);
+  let marked = false;
+
+  if (userSnap.exists()) 
+    marked = userSnap.data().mark;
+  
+  return marked;
+}
+
+export const writeUserMark = async (
+  authContext, displayToastHandler, displayLoaderHandler, closeModalHandler
+) => {
+  displayLoaderHandler(true);
+  if (!authContext || !authContext.token) {
+    displayToastHandler('No valid Auth, please refresh', 'error');
+    displayLoaderHandler(false);
+    setTimeout(closeModalHandler, 2200);
+    return;
+  }
+
+  const { uid } = authContext;
+  const usersRef = collection(db, 'users')
+  const userRef = doc(db, 'users', uid);
+
+  try {
+    await setDoc(doc(usersRef, uid), {
+      mark: false
+    }, { merge: true });
+    displayToastHandler('Attendance Marked RST', 'success');
+  } catch (err) {
+    displayToastHandler('Attendance State Reset', 'error');
+    console.log(err);
+  }
+
+  displayLoaderHandler(false);
+  setTimeout(closeModalHandler, 2200);
+};
+
+export const readFullDatabase = async (authContext) => {
+  if (!authContext || !authContext.token) return;
+
+  const usersRef = collection(db, 'users');
+  let userSnaps = await getDocs(usersRef);
+  let snapshots = {};
+  userSnaps.docs.forEach(doc => {
+    snapshots = {...snapshots, [doc.id] : doc.data()};
+  });
+  return snapshots;
+}

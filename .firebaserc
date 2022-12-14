@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "qr-attendance-xodalg"
+  },
+  "targets": {
+    "qr-attendance-xodalg": {
+      "hosting": {
+        "qr-attendance-xod": [
+          "qr-attendance-xodalg"
+        ],
+        "qr-attendance": [
+          "qra"
+        ]
+      }
+    }
+  }
+}

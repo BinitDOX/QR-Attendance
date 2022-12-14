@@ -14,7 +14,7 @@ import Loader from "../components/Loader";
 import Details from '../components/Details';
 import QRCode from '../components/QRCode';
 import AuthContext from '../store/auth-context';
-import { fetchUserData, writeUserData, signInWithGoogle } from '../firebase/FirebaseUtils';
+import { fetchUserData, writeUserData, fetchUserMarked, writeUserMark, signInWithGoogle } from '../firebase/FirebaseUtils';
 
 import './StudentPage.css';
 
@@ -45,6 +45,16 @@ const StudentPage = (props) => {
     return userSnap.data();
   }
 
+  const checkAttendanceMark = async () => {
+    const marked = await fetchUserMarked(authContext);
+    return marked;
+  }
+
+  const writeAttendanceMark = async () => {
+    await writeUserMark(
+      authContext, displayToastHandler, displayLoaderHandler, closeDetailsHandler
+    );
+  };
 
   // Hooks
   useEffect(() => {
@@ -113,6 +123,18 @@ const StudentPage = (props) => {
       }
 
       openQRCHandler();
+
+      let timer = setInterval(() => {
+        checkAttendanceMark().then((res) => {
+          if(res === true){
+            clearInterval(timer);
+            writeAttendanceMark();
+            displayToastHandler('Attendance marked', 'success');
+            closeQRCHandler();
+          }
+        });
+      }, 1000);
+
       setErrors(initialDetails);
     }).catch((err) => {
       console.log(err);
@@ -151,6 +173,7 @@ const StudentPage = (props) => {
       case "email":
         if (value == null || value.length === 0)
           updatedErrors[field] = "Cannot be empty";
+        break;
       default:
         break;
     }

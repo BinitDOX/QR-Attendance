@@ -18,3 +18,8 @@
 .homepage .logo {
   margin-top: 1rem;
 }
+
+.homepage .logo img{
+  margin-top: 1rem;
+  height: 200px;
+}
