@@ -10,11 +10,11 @@ const QRCode = (props) => {
       <Typography sx={{ m: 1 }} variant='h3' component='h3' align='center'>
         QR-CODE
       </Typography>
-      <div style={{ background: 'black', padding: '16px', margin: '1rem'}}>
+      <div style={{ background: '#ffd700', padding: '10px', margin: '1rem'}}>
         <QRC
           size={256}
-          bgColor=''
-          fgColor='#ffd700'
+          bgColor='#ffd700'
+          fgColor='black'
           style={{ height: "auto", maxWidth: "20rem", width: "100%" }}
           value={props.uid}
           viewBox={`0 0 256 256`}

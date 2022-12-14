@@ -10,34 +10,168 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
+import InputAdornment from '@mui/material/InputAdornment';
 import GoogleIcon from '@mui/icons-material/Google';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import NearMeIcon from '@mui/icons-material/NearMe';
+import DownloadIcon from '@mui/icons-material/Download';
 
 import Loader from "../components/Loader";
 import AuthContext from '../store/auth-context';
-import { fetchUserData, writeUserData, signInWithGoogle } from '../firebase/FirebaseUtils';
+import InputField from '../components/InputField';
+import { writeCourseData, fetchCourseData, writeAttendanceData, signInWithGoogle } from '../firebase/FirebaseUtils';
 
 import './ProfessorPage.css';
 
 const ProfessorPage = (props) => {
   // Initializers
+  let QRDataPrev = '';
+  const initialDetails = { id: '', course: '' };
   const authContext = useContext(AuthContext);
   const { enqueueSnackbar } = useSnackbar();
-  const [data, setData] = useState('No result');
+  const [QRData, setQRData] = useState('');
   const [showLoader, setLoader] = useState(false);
   const [openAddCourse, setOpenAddCourse] = useState(false);
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [openQRScanner, setOpenQRScanner] = useState(false);
+  const [details, setDetails] = useState({ ...initialDetails });
+  const [errors, setErrors] = useState({ ...initialDetails });
+  const [record, setRecord] = useState('');
+  const [attendanceRecords, setAttendanceRecords] = useState({});
+
+
+  // Asyncs:
+  const writeCourseDataToDatabase = async () => {
+    const userSnap = await writeCourseData(
+      authContext, details, displayToastHandler, displayLoaderHandler, closeAddCourseHandler
+    );
+    setAttendanceRecords({ ...userSnap.data().courses });
+    return userSnap.data().courses;
+  };
+
+  const readCourseDataFromDatabase = async () => {
+    displayLoaderHandler(true);
+    const userSnap = await fetchCourseData(authContext);
+    setAttendanceRecords({ ...userSnap.data().courses });
+    displayLoaderHandler(false);
+    return userSnap.data().courses;
+  }
+
+  const writeAttendanceToDataBase = async (attendanceData) => {
+    const userSnap = await writeAttendanceData(
+      authContext, attendanceData, displayToastHandler, displayLoaderHandler, closeAddCourseHandler
+    );
+    return userSnap === null ? '' : attendanceData.uid;
+  }
+
+  // Hooks
+  useEffect(() => {
+    if (authContext.token) {
+      readCourseDataFromDatabase();
+    } else {
+      setDetails({ ...initialDetails })
+    }
+  }, [authContext]);
+
 
   // Handlers
   const displayToastHandler = (message, severity) => enqueueSnackbar(message, { variant: severity });
   const displayLoaderHandler = (show) => setLoader(show);
   const openAddCourseHandler = () => setOpenAddCourse(true);
   const closeAddCourseHandler = () => setOpenAddCourse(false);
+  const openQRScannerHandler = () => setOpenQRScanner(true);
+  const closeQRScannerHandler = () => setOpenQRScanner(false);
+
+  const inputChangeHandler = (event) => {
+    setDetails((prevDetails) => ({
+      ...prevDetails,
+      [event.target.name]: event.target.value,
+    }));
+
+    let updatedErrors = { ...errors };
+    updatedErrors = validateInput(
+      event.target.name,
+      event.target.value,
+      updatedErrors
+    );
+    setErrors({ ...updatedErrors });
+  };
+
+  const submitHandler = () => {
+    displayLoaderHandler(true);
+    let updatedErrors = { ...errors };
+
+    for (var key in details)
+      if (details.hasOwnProperty(key))
+        updatedErrors = validateInput(key, details[key], updatedErrors);
+
+    setErrors({ ...updatedErrors });
+    const fastErrors = { ...updatedErrors };
+
+    let readyToCommit = true;
+    for (var fkey in fastErrors)
+      if (fastErrors.hasOwnProperty(fkey))
+        if (fastErrors[fkey] !== "")
+          readyToCommit = false;
+
+    console.log("Ready:", readyToCommit);
+    if (readyToCommit) {
+      writeCourseDataToDatabase();
+    }
+    displayLoaderHandler(false);
+  }
+
+  const recordClickedHandler = (value) => {
+    setRecord(value);
+    openQRScannerHandler();
+  }
+
+  const markAttendanceHandler = (data) => {
+    if(QRDataPrev === data)
+      return;
+
+    QRDataPrev = data;
+    const date = new Date().toLocaleString("en-Us", {timeZone: 'Asia/Kolkata'}).slice(0, 10);
+    const attendanceData = {course: record, uid: data, date: date};
+    console.log(attendanceData);
+
+    writeAttendanceToDataBase(attendanceData)
+    .then((res) => {
+      QRDataPrev = res;
+    });
+  }
+
+
+  // Validators
+  function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+  }
+
+  const validateInput = (field, value, updatedErrors) => {
+    switch (field) {
+      case "course":
+        if (value.length === 0)
+          updatedErrors[field] = "Cannot be empty";
+        else if (value.length < 4)
+          updatedErrors[field] = "Length should be greater than 4";
+        else if (value.length > 30)
+          updatedErrors[field] = "Length should be smaller than 30";
+        else if (!isASCII(value))
+          updatedErrors[field] = "Should only be ASCII";
+        else updatedErrors[field] = "";
+        break;
+      default:
+        break;
+    }
+    return updatedErrors;
+  };
 
   return (
     <>
+      <Loader show={showLoader} />
       <Header />
       <div className='professorpage'>
         {!authContext.isLoggedIn ?
@@ -52,7 +186,76 @@ const ProfessorPage = (props) => {
               aria-describedby="User add new course record here"
             >
               <Box sx={styleDetails}>
+                <div className='details'>
+                  <Typography sx={{ m: 1 }} variant='h3' component='h3' align='center'>
+                    ADD COURSE
+                  </Typography>
 
+                  <div className='detailsinput'>
+                    <InputField
+                      sx={{ m: 2 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <DriveFileRenameOutlineIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                      id="input-course"
+                      name='course'
+                      value={details.course}
+                      autoComplete='off'
+                      onChange={inputChangeHandler}
+                      label="COURSE"
+                      error={errors.course.length !== 0}
+                      helperText={errors.course}
+                    />
+                  </div>
+
+                  <div className='submitbutton'>
+                    <Button sx={{ m: 2 }} variant="outlined" size='large' endIcon={<NearMeIcon />} onClick={submitHandler}>
+                      SAVE COURSE
+                    </Button>
+                  </div>
+                </div>
+              </Box>
+            </Modal>
+
+            <Modal
+              open={openQRScanner}
+              onClose={closeQRScannerHandler}
+              aria-labelledby="QR Scanner"
+              aria-describedby="Scan for QRCs here"
+            >
+              <Box sx={styleDetails}>
+                <div className='details'>
+                  <Typography sx={{ m: 1 }} variant='h3' component='h3' align='center'>
+                    QR SCANNER
+                  </Typography>
+
+                  <div className='qrreader'>
+                    <QrReader
+                      onResult={(result, error) => {
+                        if (!!result) {
+                          setQRData(result?.text);
+                          markAttendanceHandler(result?.text);
+                        }
+
+                        if (!!error) {
+                          //console.info(error);
+                        }
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                    <p> {QRData} </p>
+                  </div>
+                  
+                  <div className='submitbutton'>
+                    <Button sx={{ m: 2 }} variant="outlined" size='large' endIcon={<DownloadIcon />}>
+                      GENERATE CSV
+                    </Button>
+                  </div>
+                </div>
               </Box>
             </Modal>
 
@@ -62,43 +265,22 @@ const ProfessorPage = (props) => {
 
             <div className='attendancerecords'>
               <Box sx={{ width: '100%', maxWidth: 360, bgcolor: '#0000005c' }}>
-                <List sx={{overflow: 'auto', maxHeight: 300, padding: 0}}>
-                  
-                  <ListItem disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon>
-                        <AssignmentIcon/>
-                      </ListItemIcon>
-                      <ListItemText primary="Trash" />
-                    </ListItemButton>
-                  </ListItem>
-                  
-                  <ListItem disablePadding>
-                    <ListItemButton>
-                      <ListItemIcon>
-                        <AssignmentIcon />
-                      </ListItemIcon>
-                      <ListItemText primary="Spam" />
-                    </ListItemButton>
-                  </ListItem>
+                <List sx={{ overflow: 'auto', maxHeight: 300, padding: 0 }}>
+                  {Object.keys(attendanceRecords).sort().map((record) => {
+                    return (
+                      <ListItem key={record} disablePadding>
+                        <ListItemButton onClick={() => recordClickedHandler(record)}>
+                          <ListItemIcon>
+                            <AssignmentIcon />
+                          </ListItemIcon>
+                          <ListItemText primary={record} />
+                        </ListItemButton>
+                      </ListItem>);
+                  })}
 
                 </List>
               </Box>
             </div>
-
-            {/* <QrReader
-            onResult={(result, error) => {
-              if (!!result) {
-                setData(result?.text);
-              }
-
-              if (!!error) {
-                //console.info(error);
-              }
-            }}
-            style={{ width: '100%' }}
-          />
-          <p>{data}</p> */}
           </>
         }
       </div>

@@ -25,24 +25,3 @@
   bottom: 0;
   margin-bottom: 2rem;
 }
-
-.details .MuiSvgIcon-root{
-  color: white;
-}
-
-.details .MuiInputBase-input{
-  font-size: 1rem;
-}
-
-.details .MuiFormLabel-root{
-  color: white;
-}
-
-.details .MuiFormLabel-root.Mui-focused{
-  color: #ffdb1b;
-}
-
-.details .MuiOutlinedInput-input.Mui-disabled{
-  color: #888888;
-  -webkit-text-fill-color: #888888;
-}

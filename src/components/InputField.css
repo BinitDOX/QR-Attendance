@@ -1,0 +1,20 @@
+.inputfield .MuiSvgIcon-root{
+  color: white;
+}
+
+.inputfield .MuiInputBase-input{
+  font-size: 1rem;
+}
+
+.inputfield .MuiFormLabel-root{
+  color: white;
+}
+
+.inputfield .MuiFormLabel-root.Mui-focused{
+  color: #ffdb1b;
+}
+
+.inputfield .MuiOutlinedInput-input.Mui-disabled{
+  color: #888888;
+  -webkit-text-fill-color: #888888;
+}
