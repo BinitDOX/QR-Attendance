@@ -1,0 +1,38 @@
+.professorpage {
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+
+  margin: 2rem 2rem;
+  justify-content: center;
+  text-align: center;
+  color: #ffdb1b;
+}
+
+.professorpage .attendancerecords{
+  margin-top: 2rem;
+}
+
+.professorpage .MuiSvgIcon-root{
+  color: #ffdb1b;
+}
+
+.professorpage .MuiList-root{
+  border-radius: 13px;
+}
+
+.professorpage .MuiBox-root{
+  border-radius: 13px;
+}
+
+.professorpage li{
+  border-bottom: solid 1px #ffdb1b;
+  border-radius: 13px;
+}
+
+.professorpage .logout {
+  position: absolute;
+  margin: 2rem;
+  bottom: 0;
+  right: 0;
+}

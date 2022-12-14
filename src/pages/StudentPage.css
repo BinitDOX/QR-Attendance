@@ -9,8 +9,9 @@
   color: #ffdb1b;
 }
 
-.homepage .login {
-  text-transform: uppercase;
-  font-size: 2rem;
-  font-weight: 600;
+.studentpage .logout {
+  position: absolute;
+  margin: 2rem;
+  bottom: 0;
+  right: 0;
 }

@@ -1,0 +1,14 @@
+.qrcode {
+  display: block;
+  position:absolute;
+  height:auto;
+  bottom:0;
+  top:0;
+  left:0;
+  right:0;
+  margin: 20px;
+  align-items: center;
+  text-align: center;
+  border: solid 2px #ffdb1b;
+  border-radius: 5px;
+}

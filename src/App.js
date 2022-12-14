@@ -14,6 +14,11 @@ const theme = createTheme({
       main: '#1f1f1f'
     }
   },
+  typography: {
+    allVariants: {
+      color: '#ffdb1b'
+    },
+  },
 });
 
 const App = () => {
