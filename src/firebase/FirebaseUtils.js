@@ -204,7 +204,7 @@ export const writeAttendanceData = async (
 export const fetchUserMarked = async (authContext) => {
   if (!authContext || !authContext.token) return;
 
-  const { uid, email } = authContext;
+  const { uid } = authContext;
   const userRef = doc(db, 'users', uid);
   let userSnap = await getDoc(userRef);
   let marked = false;
@@ -228,7 +228,6 @@ export const writeUserMark = async (
 
   const { uid } = authContext;
   const usersRef = collection(db, 'users')
-  const userRef = doc(db, 'users', uid);
 
   try {
     await setDoc(doc(usersRef, uid), {
