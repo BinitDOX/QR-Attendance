@@ -129,7 +129,7 @@ const StudentPage = (props) => {
           if(res === true){
             clearInterval(timer);
             writeAttendanceMark();
-            displayToastHandler('Attendance marked', 'success');
+            displayToastHandler('Attendance Marked', 'success');
             closeQRCHandler();
           }
         });

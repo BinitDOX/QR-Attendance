@@ -234,7 +234,7 @@ export const writeUserMark = async (
     await setDoc(doc(usersRef, uid), {
       mark: false
     }, { merge: true });
-    displayToastHandler('Attendance Marked RST', 'success');
+    displayToastHandler('Attendance State Reset', 'success');
   } catch (err) {
     displayToastHandler('Attendance State Reset', 'error');
     console.log(err);

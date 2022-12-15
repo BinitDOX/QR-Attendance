@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { SnackbarProvider } from "notistack";
+import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Collapse } from '@mui/material';
 
 import App from './App';
@@ -15,6 +15,11 @@ root.render(
     <AuthContextProvider>
       <SnackbarProvider
         maxSnack={4}
+        action={(snackbarId) => (
+          <button onClick={() => closeSnackbar(snackbarId)}>
+            Dismiss
+          </button>
+        )}
         anchorOrigin={{
           vertical: "top",
           horizontal: "center",

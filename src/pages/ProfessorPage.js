@@ -27,7 +27,6 @@ import InputField from '../components/InputField';
 import { writeCourseData, fetchCourseData, writeAttendanceData, readFullDatabase, signInWithGoogle } from '../firebase/FirebaseUtils';
 
 import './ProfessorPage.css';
-import { async } from '@firebase/util';
 
 const ProfessorPage = (props) => {
   // Initializers
@@ -325,6 +324,10 @@ const ProfessorPage = (props) => {
                 </List>
               </Box>
             </div>
+
+            <Button className='logout' sx={{ m: 2 }} variant="outlined" startIcon={<LogoutIcon />} onClick={authContext.logout}>
+              LogOut
+            </Button>
           </>
         }
       </div>
