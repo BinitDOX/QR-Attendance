@@ -150,7 +150,7 @@ const ProfessorPage = (props) => {
     const fileName = record;
     const exportType = exportFromJSON.types.xls;
 
-    exportFromJSON({ data, fileName, exportType});
+    exportFromJSON({ data, fileName, exportType });
   }
 
   // Direct Async Handler [Best Method]
@@ -279,6 +279,9 @@ const ProfessorPage = (props) => {
 
                   <div className='qrreader'>
                     <QrReader
+                      constraints={{
+                        facingMode: 'environment'
+                      }}
                       onResult={(result, error) => {
                         if (!!result) {
                           setQRData(result?.text);
