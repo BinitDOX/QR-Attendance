@@ -103,7 +103,6 @@ const ProfessorPage = (props) => {
   };
 
   const submitHandler = () => {
-    displayLoaderHandler(true);
     let updatedErrors = { ...errors };
 
     for (var key in details)
@@ -123,7 +122,6 @@ const ProfessorPage = (props) => {
     if (readyToCommit) {
       writeCourseDataToDatabase();
     }
-    displayLoaderHandler(false);
   }
 
   const recordClickedHandler = (value) => {
@@ -139,6 +137,11 @@ const ProfessorPage = (props) => {
     const date = new Date().toLocaleString("en-Us", { timeZone: 'Asia/Kolkata' }).slice(0, 10);
     const attendanceData = { course: record, uid: data, date: date };
     console.log(attendanceData);
+
+    if(!(/^(?!\.\.?$)(?!.*__.*__)([^/]{1,1500})$/.test(attendanceData.uid))){
+      displayToastHandler('Bad QRC', 'error');
+      return;
+    }
 
     writeAttendanceToDataBase(attendanceData)
       .then((res) => {

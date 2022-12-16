@@ -56,6 +56,7 @@ const StudentPage = (props) => {
     );
   };
 
+
   // Hooks
   useEffect(() => {
     console.log(authContext);
@@ -91,7 +92,6 @@ const StudentPage = (props) => {
   };
 
   const submitHandler = () => {
-    displayLoaderHandler(true);
     let updatedErrors = { ...errors };
 
     for (var key in details)
@@ -111,7 +111,6 @@ const StudentPage = (props) => {
     if (readyToCommit) {
       writeToDatabase();
     }
-    displayLoaderHandler(false);
   }
 
   const generateQRHandler = () => {
@@ -122,6 +121,7 @@ const StudentPage = (props) => {
         return;
       }
 
+      writeAttendanceMark();
       openQRCHandler();
 
       let timer = setInterval(() => {

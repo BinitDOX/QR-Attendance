@@ -12,10 +12,16 @@ import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => { }
+  console.error = () => { }
+  console.debug = () => { }
+}
+
 const DismissAction = ({ id }) => {
   const { closeSnackbar } = useSnackbar()
   return (
-    <Button sx={{color: 'white'}} onClick={() => closeSnackbar(id)}>Close</Button>
+    <Button sx={{ color: 'white' }} onClick={() => closeSnackbar(id)}>Close</Button>
   )
 }
 

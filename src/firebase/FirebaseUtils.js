@@ -47,7 +47,7 @@ export const fetchUserData = async (authContext) => {
         email: email,
         createdDate: timestamp,
         mark: false,
-        courses: []
+        courses: {}
       });
     } catch (err) {
       console.log(err);
@@ -109,7 +109,7 @@ export const fetchCourseData = async (authContext) => {
         email: email,
         createdDate: timestamp,
         mark: false,
-        courses: []
+        courses: {}
       });
     } catch (err) {
       console.log(err);
@@ -171,26 +171,37 @@ export const writeAttendanceData = async (
   const userSnapAway = await getDoc(userRefAway);
 
   if (!userSnapAway.exists()) {
-    displayToastHandler('Bad QR-Code', 'error');
+    displayToastHandler('User does not exist', 'error');
     displayLoaderHandler(false);
-    return null;
+    return 'bad';
   }
 
   try {
+    const snap = await getDoc(userRef);
+    const cdata = snap.data().courses[attendanceDetails.course][attendanceDetails.date];
+    if(cdata !== undefined){
+      const adata = cdata[attendanceDetails.uid];
+      if(adata !== undefined){
+        displayToastHandler('Duplicated Punch', 'info');
+        await setDoc(doc(usersRef, attendanceDetails.uid), {
+          mark: true
+        }, { merge: true });
+        displayLoaderHandler(false);
+        setTimeout(closeModalHandler, 2200);
+        return snap;
+      }
+    }
+
     await setDoc(doc(usersRef, uid), {
       courses: {[attendanceDetails.course] : {[attendanceDetails.date] : {[attendanceDetails.uid] : true}}}
     }, { merge: true });
     displayToastHandler('Attendance Marked', 'success');
-  } catch (err) {
-    displayToastHandler(err, 'error');
-    console.log(err);
-  }
 
-  try {
     await setDoc(doc(usersRef, attendanceDetails.uid), {
       mark: true
     }, { merge: true });
   } catch (err) {
+    displayToastHandler('Some Error Occured', 'error');
     console.log(err);
   }
 
@@ -233,9 +244,9 @@ export const writeUserMark = async (
     await setDoc(doc(usersRef, uid), {
       mark: false
     }, { merge: true });
-    displayToastHandler('Attendance State Reset', 'success');
+    //displayToastHandler('Attendance State Reset', 'success');
   } catch (err) {
-    displayToastHandler('Attendance State Reset', 'error');
+    displayToastHandler('Attendance State Can\'t Reset', 'error');
     console.log(err);
   }
 
