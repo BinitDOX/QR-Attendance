@@ -14,6 +14,8 @@ export const signInWithGoogle = (displayToastHandler, displayLoaderHandler, auth
     console.log(result);
     authContext.login(result.user.accessToken, result.user.uid, result.user.email, result.user.displayName);
     displayToastHandler(`Authentication Successsful`, 'success');
+    if(!(result.user.email.endsWith('@itbhu.ac.in') || result.user.email.endsWith('@iitbhu.ac.in')))
+    displayToastHandler(`Not logged with institute ID`, 'warning');
   }).catch((error) => {
     switch (error.code) {
       case 'auth/popup-closed-by-user':

@@ -182,7 +182,12 @@ const ProfessorPage = (props) => {
         }
       }
       // console.log(userMap);
-      downloadCSVHandler(Object.values(userMap));
+      const arrObj = Object.values(userMap).sort((a, b) => {
+        const x = a.RollNo;
+        const y = b.RollNo;
+        return x < y;
+      });
+      downloadCSVHandler(arrObj);
     } catch (err) {
       displayToastHandler('Internal error', 'error');
       console.log(err);
